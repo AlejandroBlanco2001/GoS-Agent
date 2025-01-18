@@ -9,13 +9,13 @@ type Terminal struct {
 	OS string
 }
 
-func NewTerminal(os string) Terminal {
-	return Terminal{
+func NewTerminal(os string) *Terminal {
+	return &Terminal{
 		OS: os,
 	}
 }
 
-func (t Terminal) run(includeOutput bool, command []string) error {
+func (t *Terminal) run(includeOutput bool, command []string) error {
 	if len(command) == 0 {
 		fmt.Println("No command provided")
 		return nil
@@ -35,6 +35,6 @@ func (t Terminal) run(includeOutput bool, command []string) error {
 	return nil
 }
 
-func GetNetStat(t Terminal) error {
+func (t *Terminal) GetOpenConnections() error {
 	return t.run(true, OpenConnections)
 }
