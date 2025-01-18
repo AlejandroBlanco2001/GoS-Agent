@@ -17,6 +17,11 @@ func Run() {
 	fmt.Println("--------------------------------------------------")
 
 	t := terminal.NewTerminal(os)
+
+	if t == nil {
+		panic("Error creating terminal")
+	}
+
 	ticker := time.NewTicker(1 * time.Second)
 	quit := make(chan struct{})
 
