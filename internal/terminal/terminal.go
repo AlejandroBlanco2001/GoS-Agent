@@ -4,6 +4,7 @@ import (
 	parser "alejandroblanco2001/scanneros/internal/terminal/parser"
 	"fmt"
 	"os/exec"
+	"time"
 )
 
 type Terminal struct {
@@ -19,14 +20,14 @@ func NewTerminal(os string) *Terminal {
 func (t *Terminal) run(includeOutput bool, command []string) ([]byte, error) {
 	if len(command) == 0 {
 		fmt.Println("No command provided")
-		return nil, nil
+		return nil, fmt.Errorf("no command provided")
 	}
 
 	out, err := exec.Command(command[0], command[1:]...).Output()
 
 	if err != nil {
 		fmt.Println("Error: ", err)
-		return nil, err
+		return nil, fmt.Errorf("failed to execute command: %v, output: %s", err, out)
 	}
 
 	if includeOutput {
@@ -36,7 +37,7 @@ func (t *Terminal) run(includeOutput bool, command []string) ([]byte, error) {
 	return nil, nil
 }
 
-func (t *Terminal) GetOpenConnections() []map[string]string {
+func (t *Terminal) GetOpenConnections() map[string]map[string]string {
 	result, err := t.run(true, OpenConnections)
 
 	if err != nil {
@@ -45,6 +46,8 @@ func (t *Terminal) GetOpenConnections() []map[string]string {
 	}
 
 	mapper := parser.ParseNetStatOutput(string(result))
+
+	time.Sleep(5 * time.Second)
 
 	return mapper
 }
