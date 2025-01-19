@@ -38,3 +38,14 @@ func (t *Terminal) run(includeOutput bool, command []string) error {
 func (t *Terminal) GetOpenConnections() error {
 	return t.run(true, OpenConnections)
 }
+
+func (t *Terminal) Start() {
+	for {
+		t.GetOpenConnections()
+	}
+}
+
+func (t *Terminal) Stop() {
+	fmt.Println("Stopping terminal")
+	panic("Stop")
+}
