@@ -6,9 +6,10 @@ import (
 	"runtime"
 
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
-func StartMonitor(lc fx.Lifecycle) *terminal.Terminal {
+func NewMonitor(lc fx.Lifecycle, log *zap.Logger) *terminal.Terminal {
 	os := runtime.GOOS
 
 	t := terminal.NewTerminal(os)
@@ -19,6 +20,7 @@ func StartMonitor(lc fx.Lifecycle) *terminal.Terminal {
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
+			log.Info("Terminal started")
 			t.Start()
 			return nil
 		},
