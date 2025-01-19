@@ -1,6 +1,7 @@
 package terminal
 
 import (
+	parser "alejandroblanco2001/scanneros/internal/terminal/parser"
 	"fmt"
 	"os/exec"
 )
@@ -15,33 +16,43 @@ func NewTerminal(os string) *Terminal {
 	}
 }
 
-func (t *Terminal) run(includeOutput bool, command []string) error {
+func (t *Terminal) run(includeOutput bool, command []string) ([]byte, error) {
 	if len(command) == 0 {
 		fmt.Println("No command provided")
-		return nil
+		return nil, nil
 	}
 
 	out, err := exec.Command(command[0], command[1:]...).Output()
 
 	if err != nil {
 		fmt.Println("Error: ", err)
-		return err
+		return nil, err
 	}
 
 	if includeOutput {
-		fmt.Println("Output: ", string(out))
+		return out, nil
 	}
 
-	return nil
+	return nil, nil
 }
 
-func (t *Terminal) GetOpenConnections() error {
-	return t.run(true, OpenConnections)
+func (t *Terminal) GetOpenConnections() []map[string]string {
+	result, err := t.run(true, OpenConnections)
+
+	if err != nil {
+		fmt.Println("Error getting open connections: ", err)
+		return nil
+	}
+
+	mapper := parser.ParseNetStatOutput(string(result))
+
+	return mapper
 }
 
 func (t *Terminal) Start() {
 	for {
-		t.GetOpenConnections()
+		result := t.GetOpenConnections()
+		fmt.Println(result)
 	}
 }
 
