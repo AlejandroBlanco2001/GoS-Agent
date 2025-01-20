@@ -47,15 +47,19 @@ func (t *Terminal) GetOpenConnections() map[string]map[string]string {
 
 	mapper := parser.ParseNetStatOutput(string(result))
 
-	time.Sleep(5 * time.Second)
+	for key, value := range mapper {
+		if value["state"] == "ESTABLISHED" {
+			fmt.Printf("Established connection %s with protocol %s\n", key, value["protocol"])
+		}
+	}
 
 	return mapper
 }
 
 func (t *Terminal) Start() {
 	for {
-		result := t.GetOpenConnections()
-		fmt.Println(result)
+		_ = t.GetOpenConnections()
+		time.Sleep(15 * time.Second)
 	}
 }
 
