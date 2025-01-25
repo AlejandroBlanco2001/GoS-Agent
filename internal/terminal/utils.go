@@ -9,8 +9,7 @@ func RemoveOutputCommandPrefix(commandOutputPrefix []byte) string {
 	cleanString := strings.TrimSpace(string(commandOutputPrefix))
 
 	if runtime.GOOS == "windows" {
-		cleanString = strings.ReplaceAll(cleanString, "\r", "")
-		return cleanString // Windows based systems
+		return strings.ReplaceAll(cleanString, "\r", "")
 	}
 
 	return cleanString // Unix based systems

@@ -26,7 +26,7 @@ func ParseNetStatOutput(output string) map[string]map[string]string {
 	return results
 }
 
-func ParseNetAdapterStatistics(output string) (map[string]map[string]int64, error) {
+func ParseNetAdapterStatistics(output string, interfaceNames []string) (map[string]map[string]int64, error) {
 	lines := strings.Split(output, "\n")
 
 	results := make(map[string]map[string]int64)
@@ -38,39 +38,36 @@ func ParseNetAdapterStatistics(output string) (map[string]map[string]int64, erro
 		}
 
 		fields := strings.Fields(line)
-
 		if len(fields) < 5 {
 			continue
 		}
 
-		interfaceName := fields[0]
+		// Hack: The command that brings the interface name and the one that hold the statistics are the same
+		// so the output is the same, but the fields are different, so I can substract the lenght of the name splitted to get the statistics
+		// Therefore, the index-2 is the interface row
+		interfaceName := interfaceNames[index-2]
+		nameOffset := len(strings.Fields(interfaceName))
+		statisticsArray := fields[nameOffset:]
 
-		// TODO: This is a dirty workaround, I need to use the command GetInterfaceNames to get the interface name properly and remove based on this output
-		// Basically find if the strings is inside of the fields, remove it to that point and join the rest, in that way, i can avoid the if
-		if len(fields) > 5 {
-			interfaceName = strings.Join(fields[:len(fields)-4], " ")
-			fields = append(fields[:1], fields[2:]...)
-		}
-
-		recievedBytes, err := strconv.ParseInt(fields[1], 10, 64)
+		recievedBytes, err := strconv.ParseInt(statisticsArray[0], 10, 64)
 
 		if err != nil {
 			return nil, err
 		}
 
-		recievedUnicastPackets, err := strconv.ParseInt(fields[2], 10, 64)
+		recievedUnicastPackets, err := strconv.ParseInt(statisticsArray[1], 10, 64)
 
 		if err != nil {
 			return nil, err
 		}
 
-		sentBytes, err := strconv.ParseInt(fields[3], 10, 64)
+		sentBytes, err := strconv.ParseInt(statisticsArray[2], 10, 64)
 
 		if err != nil {
 			return nil, err
 		}
 
-		sentUnicastPackets, err := strconv.ParseInt(fields[4], 10, 64)
+		sentUnicastPackets, err := strconv.ParseInt(statisticsArray[3], 10, 64)
 
 		if err != nil {
 			return nil, err
