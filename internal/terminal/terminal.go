@@ -1,20 +1,41 @@
 package terminal
 
 import (
+	logger "alejandroblanco2001/scanneros/internal/platform/logger"
 	parser "alejandroblanco2001/scanneros/internal/terminal/parser"
+	"context"
 	"fmt"
 	"os/exec"
+	"runtime"
 	"time"
+
+	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
 type Terminal struct {
-	OS string
+	OS     string
+	logger *logger.EchoHandler
 }
 
-func NewTerminal(os string) *Terminal {
-	return &Terminal{
-		OS: os,
+func NewTerminal(lc fx.Lifecycle, logger *logger.EchoHandler) *Terminal {
+	terminal := &Terminal{
+		OS:     runtime.GOOS,
+		logger: logger,
 	}
+
+	lc.Append(fx.Hook{
+		OnStart: func(context context.Context) error {
+			go terminal.Start()
+			return nil
+		},
+		OnStop: func(context context.Context) error {
+			terminal.Stop()
+			return nil
+		},
+	})
+
+	return terminal
 }
 
 func (t *Terminal) run(includeOutput bool, command []string) ([]byte, error) {
@@ -67,3 +88,10 @@ func (t *Terminal) Stop() {
 	fmt.Println("Stopping terminal")
 	panic("Stop")
 }
+
+var Module = fx.Options(
+	fx.Provide(NewTerminal, logger.NewEchoHandler, zap.NewExample),
+	fx.Invoke(func(t *Terminal) {
+		go t.Start()
+	}),
+)
