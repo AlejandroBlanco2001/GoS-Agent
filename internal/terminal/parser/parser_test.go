@@ -44,14 +44,14 @@ func TestParseNetStatOutput(t *testing.T) {
 }
 
 func TestParseNetAdapterStatistics(t *testing.T) {
-	mockResultOfTheCommand := `
+	mockResultOfTheCommandWithInterfaces := `
 	Name           ReceivedBytes ReceivedUnicastPackets SentBytes   SentUnicastPackets
 	----           ------------- ---------------------- ---------   ------------------
 	Ethernet0      1048576000    1500000                2097152000 3000000
 	Wi-Fi          524288000     800000                 1073741824 1600000
 	`
 
-	expected := map[string]map[string]int64{
+	expectedInterfaces := map[string]map[string]int64{
 		"Ethernet0": {
 			"ReceivedBytes":          1048576000,
 			"ReceivedUnicastPackets": 1500000,
@@ -66,21 +66,45 @@ func TestParseNetAdapterStatistics(t *testing.T) {
 		},
 	}
 
-	result, _ := ParseNetAdapterStatistics(strings.TrimSpace(mockResultOfTheCommand), []string{"Ethernet0", "Wi-Fi"})
+	interfacesAvailable := []string{"Ethernet0", "Wi-Fi"}
 
-	for key, value := range expected {
-		if result[key]["ReceivedBytes"] != value["ReceivedBytes"] {
-			t.Errorf("Expected %d, but got %d", value["ReceivedBytes"], result[key]["ReceivedBytes"])
-		}
-		if result[key]["ReceivedUnicastPackets"] != value["ReceivedUnicastPackets"] {
-			t.Errorf("Expected %d, but got %d", value["ReceivedUnicastPackets"], result[key]["ReceivedUnicastPackets"])
-		}
-		if result[key]["SentBytes"] != value["SentBytes"] {
-			t.Errorf("Expected %d, but got %d", value["SentBytes"], result[key]["SentBytes"])
-		}
-		if result[key]["SentUnicastPackets"] != value["SentUnicastPackets"] {
-			t.Errorf("Expected %d, but got %d", value["SentUnicastPackets"], result[key]["SentUnicastPackets"])
-		}
+	var tests = []struct {
+		name       string
+		input      string
+		interfaces []string
+		want       map[string]map[string]int64
+	}{
+		{"it should return the statistics of the interfaces", mockResultOfTheCommandWithInterfaces, interfacesAvailable, expectedInterfaces},
+		{"it should return an empty map if the input is empty", "", []string{}, map[string]map[string]int64{}},
+	}
+
+	for _, it := range tests {
+		t.Run(it.name, func(t *testing.T) {
+			result, _ := ParseNetAdapterStatistics(strings.TrimSpace(it.input), it.interfaces)
+
+			if len(result) != len(it.want) {
+				t.Errorf("Expected %d, but got %d", len(it.want), len(result))
+			}
+
+			if len(result) == 0 {
+				return
+			}
+
+			for key, value := range it.want {
+				if result[key]["ReceivedBytes"] != value["ReceivedBytes"] {
+					t.Errorf("Expected %d, but got %d", value["ReceivedBytes"], result[key]["ReceivedBytes"])
+				}
+				if result[key]["ReceivedUnicastPackets"] != value["ReceivedUnicastPackets"] {
+					t.Errorf("Expected %d, but got %d", value["ReceivedUnicastPackets"], result[key]["ReceivedUnicastPackets"])
+				}
+				if result[key]["SentBytes"] != value["SentBytes"] {
+					t.Errorf("Expected %d, but got %d", value["SentBytes"], result[key]["SentBytes"])
+				}
+				if result[key]["SentUnicastPackets"] != value["SentUnicastPackets"] {
+					t.Errorf("Expected %d, but got %d", value["SentUnicastPackets"], result[key]["SentUnicastPackets"])
+				}
+			}
+		})
 	}
 }
 
