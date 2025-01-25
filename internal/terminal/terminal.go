@@ -84,7 +84,7 @@ func (t *Terminal) GetOpenConnectionStatistics() {
 		t.logger.LogError(fmt.Sprintf("Failed to get open connection statistics: %v", err))
 	}
 
-	mapper, err := parser.ParseNetAdapterStatistics(string(result))
+	mapper, err := parser.ParseNetAdapterStatistics(string(result), t.EthernetAdapterNames)
 
 	if err != nil {
 		t.logger.LogError(fmt.Sprintf("Failed to parse open connection statistics: %v", err))
