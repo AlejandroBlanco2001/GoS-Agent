@@ -85,24 +85,37 @@ func TestParseNetAdapterStatistics(t *testing.T) {
 }
 
 func TestParseInterfaceNames(t *testing.T) {
-	const mockResultOfTheCommand = `Name
+	const mockResultOfTheCommandWithInterfaces = `Name
 		----
 		Wi-Fi
 		Ethernet 2
 		Local Area Connection* 1
 	`
 
-	expected := []string{"Wi-Fi", "Ethernet 2", "Local Area Connection* 1"}
+	expectedCommandWithInterfaces := []string{"Wi-Fi", "Ethernet 2", "Local Area Connection* 1"}
 
-	result, _ := ParseInterfaceNames(mockResultOfTheCommand)
-
-	if len(result) != len(expected) {
-		t.Errorf("Expected %d, but got %d", len(expected), len(result))
+	var tests = []struct {
+		name  string
+		input string
+		want  []string
+	}{
+		{"it should return an array with the inferfaces if we have interfaces", mockResultOfTheCommandWithInterfaces, expectedCommandWithInterfaces},
+		{"it should return an empty array if we don't have interfaces", "", []string{}},
 	}
 
-	for i, v := range expected {
-		if result[i] != v {
-			t.Errorf("Expected %s, but got %s", v, result[i])
-		}
+	for _, it := range tests {
+		t.Run(it.name, func(t *testing.T) {
+			result, _ := ParseInterfaceNames(it.input)
+
+			if len(result) != len(it.want) {
+				t.Errorf("Expected %d, but got %d", len(it.want), len(result))
+			}
+
+			for i, v := range it.want {
+				if result[i] != v {
+					t.Errorf("Expected %s, but got %s", v, result[i])
+				}
+			}
+		})
 	}
 }
