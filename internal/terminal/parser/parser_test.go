@@ -6,7 +6,7 @@ import (
 )
 
 func TestParseNetStatOutput(t *testing.T) {
-	const mockResultOfTheCommand = `
+	const mockResultOfTheCommandWithConnections = `
 		Active Connections
 
 		Proto  Local Address          Foreign Address        State
@@ -15,7 +15,7 @@ func TestParseNetStatOutput(t *testing.T) {
 		UDP    0.0.0.0:123            *:*                   
 	`
 
-	expected := map[string]map[string]string{
+	expectedConnections := map[string]map[string]string{
 		"127.0.0.1:51718": {
 			"protocol":        "TCP",
 			"foreign_address": "127.0.0.1:51719",
@@ -28,18 +28,31 @@ func TestParseNetStatOutput(t *testing.T) {
 		},
 	}
 
-	result := ParseNetStatOutput(mockResultOfTheCommand)
+	var tests = []struct {
+		name  string
+		input string
+		want  map[string]map[string]string
+	}{
+		{"it should return the statistics of the connection", mockResultOfTheCommandWithConnections, expectedConnections},
+		{"it should return an empty map if the input is empty", "", map[string]map[string]string{}},
+	}
 
-	for key, value := range expected {
-		if result[key]["protocol"] != value["protocol"] {
-			t.Errorf("Expected %s, but got %s", value["protocol"], result[key]["protocol"])
-		}
-		if result[key]["foreign_address"] != value["foreign_address"] {
-			t.Errorf("Expected %s, but got %s", value["foreign_address"], result[key]["foreign_address"])
-		}
-		if result[key]["state"] != value["state"] {
-			t.Errorf("Expected %s, but got %s", value["state"], result[key]["state"])
-		}
+	for _, it := range tests {
+		t.Run(it.name, func(t *testing.T) {
+			result := ParseNetStatOutput(strings.TrimSpace(it.input))
+
+			for key, value := range it.want {
+				if result[key]["protocol"] != value["protocol"] {
+					t.Errorf("Expected %s, but got %s", value["protocol"], result[key]["protocol"])
+				}
+				if result[key]["foreign_address"] != value["foreign_address"] {
+					t.Errorf("Expected %s, but got %s", value["foreign_address"], result[key]["foreign_address"])
+				}
+				if result[key]["state"] != value["state"] {
+					t.Errorf("Expected %s, but got %s", value["state"], result[key]["state"])
+				}
+			}
+		})
 	}
 }
 
