@@ -10,6 +10,7 @@ func main() {
 	fx.New(
 		fx.Options(
 			terminal.Module,
+			fx.NopLogger,
 		),
 	).Run()
 }
