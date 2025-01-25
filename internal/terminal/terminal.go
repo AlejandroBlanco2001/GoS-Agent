@@ -40,32 +40,31 @@ func NewTerminal(lc fx.Lifecycle, logger *logger.EchoHandler) *Terminal {
 	return terminal
 }
 
-func (t *Terminal) run(includeOutput bool, command []string) ([]byte, error) {
+func (t *Terminal) run(includeOutput bool, command []string) (string, error) {
 	if len(command) == 0 {
 		t.logger.LogError("No command provided")
-		return nil, fmt.Errorf("no command provided")
+		return "", fmt.Errorf("no command provided")
 	}
 
 	out, err := exec.Command(command[0], command[1:]...).Output()
 
 	if err != nil {
 		t.logger.LogError(fmt.Sprintf("Failed to execute command: %v, output: %s", err, out))
-		return nil, fmt.Errorf("failed to execute command: %v, output: %s", err, out)
+		return "", fmt.Errorf("failed to execute command: %v, output: %s", err, out)
 	}
 
 	if includeOutput {
-		return out, nil
+		return RemoveOutputCommandPrefix(out), nil
 	}
 
-	return nil, nil
+	return "", nil
 }
 
-func (t *Terminal) GetOpenConnections() map[string]map[string]string {
+func (t *Terminal) GetOpenConnections() {
 	result, err := t.run(true, OpenConnections)
 
 	if err != nil {
 		t.logger.LogError(fmt.Sprintf("Failed to get open connections: %v", err))
-		return nil
 	}
 
 	mapper := parser.ParseNetStatOutput(string(result))
@@ -75,13 +74,35 @@ func (t *Terminal) GetOpenConnections() map[string]map[string]string {
 			t.logger.Log(fmt.Sprintf("Established connection %s with protocol %s", key, value["protocol"]))
 		}
 	}
+}
 
-	return mapper
+func (t *Terminal) GetOpenConnectionStatistics() {
+	result, err := t.run(true, OpenConnectionStatisticsPowerShell)
+
+	if err != nil {
+		t.logger.LogError(fmt.Sprintf("Failed to get open connection statistics: %v", err))
+	}
+
+	mapper, err := parser.ParseNetAdapterStatistics(string(result))
+
+	if err != nil {
+		t.logger.LogError(fmt.Sprintf("Failed to parse open connection statistics: %v", err))
+	}
+
+	t.logger.Log(fmt.Sprintf("Open connection statistics: %v", mapper))
+
+	for key, value := range mapper {
+		t.logger.Log(fmt.Sprintf("Adapter %s Statistics: ", key))
+		t.logger.Log(fmt.Sprintf("Recieved bytes: %f mb", BytesToMB(value["ReceivedBytes"])))
+		t.logger.Log(fmt.Sprintf("Recieved unicast packets: %f mb", BytesToMB(value["ReceivedUnicastPackets"])))
+		t.logger.Log(fmt.Sprintf("Sent bytes: %f mb", BytesToMB(value["SentBytes"])))
+		t.logger.Log(fmt.Sprintf("Sent unicast packets: %f mb", BytesToMB(value["SentUnicastPackets"])))
+	}
 }
 
 func (t *Terminal) Start() {
 	for {
-		_ = t.GetOpenConnections()
+		t.GetOpenConnectionStatistics()
 		time.Sleep(15 * time.Second)
 	}
 }
