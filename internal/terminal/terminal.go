@@ -24,6 +24,8 @@ func NewTerminal(lc fx.Lifecycle, logger *logger.EchoHandler) *Terminal {
 		logger: logger,
 	}
 
+	logger.Log("Starting terminal, OS: " + terminal.OS)
+
 	lc.Append(fx.Hook{
 		OnStart: func(context context.Context) error {
 			go terminal.Start()
@@ -40,14 +42,14 @@ func NewTerminal(lc fx.Lifecycle, logger *logger.EchoHandler) *Terminal {
 
 func (t *Terminal) run(includeOutput bool, command []string) ([]byte, error) {
 	if len(command) == 0 {
-		fmt.Println("No command provided")
+		t.logger.LogError("No command provided")
 		return nil, fmt.Errorf("no command provided")
 	}
 
 	out, err := exec.Command(command[0], command[1:]...).Output()
 
 	if err != nil {
-		fmt.Println("Error: ", err)
+		t.logger.LogError(fmt.Sprintf("Failed to execute command: %v, output: %s", err, out))
 		return nil, fmt.Errorf("failed to execute command: %v, output: %s", err, out)
 	}
 
@@ -62,7 +64,7 @@ func (t *Terminal) GetOpenConnections() map[string]map[string]string {
 	result, err := t.run(true, OpenConnections)
 
 	if err != nil {
-		fmt.Println("Error getting open connections: ", err)
+		t.logger.LogError(fmt.Sprintf("Failed to get open connections: %v", err))
 		return nil
 	}
 
@@ -70,7 +72,7 @@ func (t *Terminal) GetOpenConnections() map[string]map[string]string {
 
 	for key, value := range mapper {
 		if value["state"] == "ESTABLISHED" {
-			fmt.Printf("Established connection %s with protocol %s\n", key, value["protocol"])
+			t.logger.Log(fmt.Sprintf("Established connection %s with protocol %s", key, value["protocol"]))
 		}
 	}
 
@@ -85,7 +87,7 @@ func (t *Terminal) Start() {
 }
 
 func (t *Terminal) Stop() {
-	fmt.Println("Stopping terminal")
+	t.logger.Log("Stopping terminal")
 	panic("Stop")
 }
 
