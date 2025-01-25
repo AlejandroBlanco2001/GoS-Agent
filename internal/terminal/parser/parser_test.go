@@ -39,3 +39,26 @@ func TestParseNetStatOutput(t *testing.T) {
 		}
 	}
 }
+
+func TestParseInterfaceNames(t *testing.T) {
+	const mockResultOfTheCommand = `Name
+		----
+		Wi-Fi
+		Ethernet 2
+		Local Area Connection* 1
+	`
+
+	expected := []string{"Wi-Fi", "Ethernet 2", "Local Area Connection* 1"}
+
+	result, _ := ParseInterfaceNames(mockResultOfTheCommand)
+
+	if len(result) != len(expected) {
+		t.Errorf("Expected %d, but got %d", len(expected), len(result))
+	}
+
+	for i, v := range expected {
+		if result[i] != v {
+			t.Errorf("Expected %s, but got %s", v, result[i])
+		}
+	}
+}

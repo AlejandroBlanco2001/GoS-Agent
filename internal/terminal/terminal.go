@@ -14,8 +14,9 @@ import (
 )
 
 type Terminal struct {
-	OS     string
-	logger *logger.EchoHandler
+	OS                   string
+	logger               *logger.EchoHandler
+	EthernetAdapterNames []string
 }
 
 func NewTerminal(lc fx.Lifecycle, logger *logger.EchoHandler) *Terminal {
@@ -98,6 +99,27 @@ func (t *Terminal) GetOpenConnectionStatistics() {
 		t.logger.Log(fmt.Sprintf("Sent bytes: %f mb", BytesToMB(value["SentBytes"])))
 		t.logger.Log(fmt.Sprintf("Sent unicast packets: %f mb", BytesToMB(value["SentUnicastPackets"])))
 	}
+}
+
+func (t *Terminal) GetInterfaceNames() ([]string, error) {
+	result, err := t.run(true, GetInterfaceNames)
+
+	if err != nil {
+		t.logger.LogError(fmt.Sprintf("Failed to get interface names: %v", err))
+		return nil, nil
+	}
+
+	interfaceNames, err := parser.ParseInterfaceNames(result)
+
+	if err != nil {
+		t.logger.LogError(fmt.Sprintf("Failed to parse interface names: %v", err))
+		return nil, nil
+	}
+
+	// Just to avoid calling the command again for every use of the interface names
+	t.EthernetAdapterNames = interfaceNames
+
+	return interfaceNames, nil
 }
 
 func (t *Terminal) Start() {

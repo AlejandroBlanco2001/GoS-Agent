@@ -86,3 +86,26 @@ func ParseNetAdapterStatistics(output string) (map[string]map[string]int64, erro
 
 	return results, nil
 }
+
+func ParseInterfaceNames(output string) ([]string, error) {
+	lines := strings.Split(output, "\n")
+
+	results := make([]string, 0)
+
+	for index, line := range lines {
+		line = strings.TrimSpace(line)
+
+		// This is just to help the test cases, and avoid calling functions from the terminal package (cleaning)
+		if line == "" {
+			continue
+		}
+
+		if index == 0 || index == 1 {
+			continue
+		}
+
+		results = append(results, line)
+	}
+
+	return results, nil
+}
