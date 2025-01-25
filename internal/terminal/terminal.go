@@ -93,6 +93,7 @@ func (t *Terminal) GetOpenConnectionStatistics() {
 	t.logger.Log(fmt.Sprintf("Open connection statistics: %v", mapper))
 
 	for key, value := range mapper {
+		// Idelly this should be sent to a database or a monitoring system
 		t.logger.Log(fmt.Sprintf("Adapter %s Statistics: ", key))
 		t.logger.Log(fmt.Sprintf("Recieved bytes: %f mb", BytesToMB(value["ReceivedBytes"])))
 		t.logger.Log(fmt.Sprintf("Recieved unicast packets: %f mb", BytesToMB(value["ReceivedUnicastPackets"])))
@@ -124,6 +125,10 @@ func (t *Terminal) GetInterfaceNames() ([]string, error) {
 
 func (t *Terminal) Start() {
 	for {
+		if t.EthernetAdapterNames == nil {
+			t.GetInterfaceNames()
+		}
+
 		t.GetOpenConnectionStatistics()
 		time.Sleep(15 * time.Second)
 	}
