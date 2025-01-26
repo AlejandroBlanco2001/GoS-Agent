@@ -1,3 +1,4 @@
+// Description: This file contains the terminal package that will be used to interact with the terminal and execute commands
 package terminal
 
 import (
