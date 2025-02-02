@@ -1,7 +1,9 @@
 package commandhandler
 
 import (
+	zero "alejandroblanco2001/scanneros/cmd/shell/internal/zeromq"
 	"alejandroblanco2001/scanneros/internal/platform/logger"
+	"time"
 
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -18,7 +20,17 @@ func NewCommandHandler(logger *logger.EchoHandler) *CommandHandler {
 }
 
 func (h *CommandHandler) HandleCommand() {
-	h.logger.Log("Handling command")
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	go func() {
+		for range ticker.C {
+			h.logger.Log("Handling command...")
+			zero.NewClient("Hello")
+		}
+	}()
+
+	select {}
 }
 
 var Module = fx.Options(

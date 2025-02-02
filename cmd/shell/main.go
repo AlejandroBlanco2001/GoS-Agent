@@ -1,7 +1,7 @@
 package main
 
 import (
-	"alejandroblanco2001/scanneros/internal/commandhandler"
+	"alejandroblanco2001/scanneros/cmd/shell/internal/commandhandler"
 
 	"go.uber.org/fx"
 )

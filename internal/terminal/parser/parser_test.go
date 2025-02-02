@@ -66,16 +66,12 @@ func TestParseNetAdapterStatistics(t *testing.T) {
 
 	expectedInterfaces := map[string]map[string]int64{
 		"Ethernet0": {
-			"ReceivedBytes":          1048576000,
-			"ReceivedUnicastPackets": 1500000,
-			"SentBytes":              2097152000,
-			"SentUnicastPackets":     3000000,
+			"ReceivedBytes": 1048576000,
+			"SentBytes":     2097152000,
 		},
 		"Wi-Fi": {
-			"ReceivedBytes":          524288000,
-			"ReceivedUnicastPackets": 800000,
-			"SentBytes":              1073741824,
-			"SentUnicastPackets":     1600000,
+			"ReceivedBytes": 524288000,
+			"SentBytes":     1073741824,
 		},
 	}
 
@@ -107,14 +103,8 @@ func TestParseNetAdapterStatistics(t *testing.T) {
 				if result[key]["ReceivedBytes"] != value["ReceivedBytes"] {
 					t.Errorf("Expected %d, but got %d", value["ReceivedBytes"], result[key]["ReceivedBytes"])
 				}
-				if result[key]["ReceivedUnicastPackets"] != value["ReceivedUnicastPackets"] {
-					t.Errorf("Expected %d, but got %d", value["ReceivedUnicastPackets"], result[key]["ReceivedUnicastPackets"])
-				}
 				if result[key]["SentBytes"] != value["SentBytes"] {
 					t.Errorf("Expected %d, but got %d", value["SentBytes"], result[key]["SentBytes"])
-				}
-				if result[key]["SentUnicastPackets"] != value["SentUnicastPackets"] {
-					t.Errorf("Expected %d, but got %d", value["SentUnicastPackets"], result[key]["SentUnicastPackets"])
 				}
 			}
 		})

@@ -55,29 +55,15 @@ func ParseNetAdapterStatistics(output string, interfaceNames []string) (map[stri
 			return nil, err
 		}
 
-		recievedUnicastPackets, err := strconv.ParseInt(statisticsArray[1], 10, 64)
-
-		if err != nil {
-			return nil, err
-		}
-
 		sentBytes, err := strconv.ParseInt(statisticsArray[2], 10, 64)
 
 		if err != nil {
 			return nil, err
 		}
 
-		sentUnicastPackets, err := strconv.ParseInt(statisticsArray[3], 10, 64)
-
-		if err != nil {
-			return nil, err
-		}
-
 		results[interfaceName] = map[string]int64{
-			"ReceivedBytes":          recievedBytes,
-			"ReceivedUnicastPackets": recievedUnicastPackets,
-			"SentBytes":              sentBytes,
-			"SentUnicastPackets":     sentUnicastPackets,
+			"ReceivedBytes": recievedBytes,
+			"SentBytes":     sentBytes,
 		}
 	}
 
