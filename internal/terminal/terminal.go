@@ -91,8 +91,6 @@ func (t *Terminal) GetOpenConnectionStatistics() {
 		t.logger.LogError(fmt.Sprintf("Failed to parse open connection statistics: %v", err))
 	}
 
-	t.logger.Log(fmt.Sprintf("Open connection statistics: %v", mapper))
-
 	for key, value := range mapper {
 		// Idelly this should be sent to a database or a monitoring system
 		t.logger.Log(fmt.Sprintf("Adapter %s Statistics: ", key))
