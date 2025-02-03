@@ -95,16 +95,11 @@ func TestParseNetAdapterStatistics(t *testing.T) {
 				t.Errorf("Expected %d, but got %d", len(it.want), len(result))
 			}
 
-			if len(result) == 0 {
-				return
-			}
-
-			for key, value := range it.want {
-				if result[key]["ReceivedBytes"] != value["ReceivedBytes"] {
-					t.Errorf("Expected %d, but got %d", value["ReceivedBytes"], result[key]["ReceivedBytes"])
-				}
-				if result[key]["SentBytes"] != value["SentBytes"] {
-					t.Errorf("Expected %d, but got %d", value["SentBytes"], result[key]["SentBytes"])
+			for networkInterface, stadistics := range it.want {
+				for parameter, value := range stadistics {
+					if result[networkInterface][parameter] != value {
+						t.Errorf("Expected %d, but got %d", value, result[networkInterface][parameter])
+					}
 				}
 			}
 		})
