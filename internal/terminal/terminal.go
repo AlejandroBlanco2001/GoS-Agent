@@ -108,6 +108,10 @@ func (t *Terminal) GetOpenConnectionStatistics() map[string]map[string]int64 {
 
 	var mapper map[string]map[string]int64
 
+	if t.EthernetAdapterNames == nil {
+		t.GetInterfaceNames()
+	}
+
 	if t.OS == "windows" {
 		mapper, err = parser.ParseNetAdapterStatistics(string(result), t.EthernetAdapterNames)
 	} else {

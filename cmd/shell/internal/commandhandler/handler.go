@@ -26,7 +26,7 @@ func (h *CommandHandler) HandleCommand() {
 	go func() {
 		for range ticker.C {
 			h.logger.Log("Handling command...")
-			zero.NewClient("Hello")
+			zero.NewClient("Adapters")
 		}
 	}()
 
