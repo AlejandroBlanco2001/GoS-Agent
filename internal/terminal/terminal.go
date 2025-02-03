@@ -4,11 +4,9 @@ package terminal
 import (
 	logger "alejandroblanco2001/scanneros/internal/platform/logger"
 	parser "alejandroblanco2001/scanneros/internal/terminal/parser"
-	"context"
 	"fmt"
 	"os/exec"
 	"runtime"
-	"time"
 
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -46,17 +44,6 @@ func NewTerminal(lc fx.Lifecycle, logger *logger.EchoHandler) *Terminal {
 	}
 
 	logger.Log("Starting terminal, OS: " + terminal.OS)
-
-	lc.Append(fx.Hook{
-		OnStart: func(context context.Context) error {
-			go terminal.Start()
-			return nil
-		},
-		OnStop: func(context context.Context) error {
-			terminal.Stop()
-			return nil
-		},
-	})
 
 	return terminal
 }
@@ -112,11 +99,11 @@ func (t *Terminal) GetOpenConnections() {
 	}
 }
 
-func (t *Terminal) GetOpenConnectionStatistics() {
+func (t *Terminal) GetOpenConnectionStatistics() map[string]map[string]int64 {
 	result, err := t.run(true, "OpenConnectionStatistics")
 	if err != nil {
 		t.logger.LogError(fmt.Sprintf("Failed to get open connection statistics: %v", err))
-		return
+		return nil
 	}
 
 	var mapper map[string]map[string]int64
@@ -129,10 +116,12 @@ func (t *Terminal) GetOpenConnectionStatistics() {
 
 	if err != nil {
 		t.logger.LogError(fmt.Sprintf("Failed to parse open connection statistics: %v", err))
-		return
+		return nil
 	}
 
 	t.logStatistics(mapper)
+
+	return mapper
 }
 
 func (t *Terminal) logStatistics(mapper map[string]map[string]int64) {
@@ -174,17 +163,6 @@ func (t *Terminal) GetInterfaceNames() ([]string, error) {
 	return t.EthernetAdapterNames, nil
 }
 
-func (t *Terminal) Start() {
-	for {
-		if t.EthernetAdapterNames == nil {
-			t.GetInterfaceNames()
-		}
-
-		t.GetOpenConnectionStatistics()
-		time.Sleep(15 * time.Second)
-	}
-}
-
 func (t *Terminal) Stop() {
 	t.logger.Log("Stopping terminal")
 	panic("Stop")
@@ -192,7 +170,4 @@ func (t *Terminal) Stop() {
 
 var Module = fx.Options(
 	fx.Provide(NewTerminal, logger.NewEchoHandler, zap.NewExample),
-	fx.Invoke(func(t *Terminal) {
-		go t.Start()
-	}),
 )

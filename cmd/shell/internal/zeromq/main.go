@@ -8,6 +8,7 @@ import (
 
 func NewClient(msg string) {
 	client, err := zmq.NewSocket(zmq.REQ)
+
 	if err != nil {
 		fmt.Println("Error creating socket:", err)
 		return
@@ -15,25 +16,25 @@ func NewClient(msg string) {
 
 	defer client.Close()
 
-	err = client.Connect("tcp://localhost:5555")
+	err = client.Bind("tcp://*:5555")
+
 	if err != nil {
 		fmt.Println("Error connecting to server:", err)
 		return
 	}
 
+	fmt.Printf("Sending message")
+
 	// Send message
-	_, err = client.Send(msg, 0)
-	if err != nil {
-		fmt.Println("Error sending message:", err)
-		return
-	}
+	client.Send(msg, 0)
 
-	// Receive reply
+	// Receive message
 	reply, err := client.Recv(0)
+
 	if err != nil {
-		fmt.Println("Error receiving reply:", err)
+		fmt.Println("Error receiving message:", err)
 		return
 	}
 
-	fmt.Println("Received:", reply)
+	fmt.Println("Received reply:", reply)
 }
