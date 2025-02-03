@@ -41,15 +41,11 @@ func TestParseNetStatOutput(t *testing.T) {
 		t.Run(it.name, func(t *testing.T) {
 			result := ParseNetStatOutput(strings.TrimSpace(it.input))
 
-			for key, value := range it.want {
-				if result[key]["protocol"] != value["protocol"] {
-					t.Errorf("Expected %s, but got %s", value["protocol"], result[key]["protocol"])
-				}
-				if result[key]["foreign_address"] != value["foreign_address"] {
-					t.Errorf("Expected %s, but got %s", value["foreign_address"], result[key]["foreign_address"])
-				}
-				if result[key]["state"] != value["state"] {
-					t.Errorf("Expected %s, but got %s", value["state"], result[key]["state"])
+			for networkIP, statistics := range it.want {
+				for parameter, value := range statistics {
+					if result[networkIP][parameter] != value {
+						t.Errorf("Expected %s, but got %s", value, result[networkIP][parameter])
+					}
 				}
 			}
 		})
